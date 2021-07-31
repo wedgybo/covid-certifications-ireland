@@ -7,8 +7,6 @@ export const EmailContext = createContext();
 export function EmailContextProvider({ children }) {
     const config = useConfig();
 
-    // sgMail.setApiKey('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')
-
     const api = {
         client: SendGrid,
         send: async (msg) => {

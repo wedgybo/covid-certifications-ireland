@@ -119,7 +119,7 @@ export default function TestCertificateForm() {
         naa_test_name: ' ' // Required blank entry to get around API validation limitation
     };
 
-    const { register, reset, control, handleSubmit, formState: { errors } } = useForm({ defaultValues });
+    const { register, reset, control, setValue, handleSubmit, formState: { errors } } = useForm({ defaultValues });
 
     const clearForm = () => {
 
@@ -148,6 +148,7 @@ export default function TestCertificateForm() {
             setCertificate(certificateRequest);
             setShowCertificate(true);
             await email.send(msg);
+            clearForm();
 
             snackbar.success('Certificate sent');
         } else {
@@ -158,6 +159,10 @@ export default function TestCertificateForm() {
 
     const onCloseCertificate = () => {
         setShowCertificate(false);
+    };
+
+    const handleNow = () => {
+        setValue('sample_collection_time', new Date());
     };
 
     return (
@@ -328,36 +333,46 @@ export default function TestCertificateForm() {
                                 />
                             </Grid>
                             <Grid item md={6} xs={12}>
-                                <FormControl variant="outlined" fullWidth className={classes.formControl}>
-                                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                                        <Controller
-                                            control={control}
-                                            name="sample_collection_time"
-                                            placeholder="Sample collection time"
-                                            defaultValue={new Date()}
-                                            rules={({ required: { value: true, message: 'Sample collection time is required' } })}
-                                            render={({ field: { ref, ...rest } }) => (
-                                                <KeyboardDateTimePicker
-                                                    margin="normal"
-                                                    required
-                                                    id="sample_collection_time"
+                                <Grid container direction="row"
+                                    justify="center"
+                                    alignItems="center"
+                                >
+                                    <Grid item xs={9}>
+                                        <FormControl variant="outlined" fullWidth className={classes.formControl}>
+                                            <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                                                <Controller
+                                                    control={control}
                                                     name="sample_collection_time"
-                                                    label="Sample collection time"
-                                                    inputVariant="outlined"
-                                                    value={new Date()}
-                                                    KeyboardButtonProps={{
-                                                        "aria-label": "select the sample collection time",
-                                                    }}
-                                                    invalidDateMessage={"Sample collection time is required"}
-                                                    fullWidth
-                                                    error={!!errors && errors.sample_collection_time}
-                                                    helperText={errors && errors.sample_collection_time && errors.sample_collection_time.message}
-                                                    {...rest}
+                                                    placeholder="Sample collection time"
+                                                    defaultValue={new Date()}
+                                                    rules={({ required: { value: true, message: 'Sample collection time is required' } })}
+                                                    render={({ field: { ref, ...rest } }) => (
+                                                        <KeyboardDateTimePicker
+                                                            margin="normal"
+                                                            required
+                                                            id="sample_collection_time"
+                                                            name="sample_collection_time"
+                                                            label="Sample collection time"
+                                                            inputVariant="outlined"
+                                                            value={new Date()}
+                                                            KeyboardButtonProps={{
+                                                                "aria-label": "select the sample collection time",
+                                                            }}
+                                                            invalidDateMessage={"Sample collection time is required"}
+                                                            fullWidth
+                                                            error={!!errors && errors.sample_collection_time}
+                                                            helperText={errors && errors.sample_collection_time && errors.sample_collection_time.message}
+                                                            {...rest}
+                                                        />
+                                                    )}
                                                 />
-                                            )}
-                                        />
-                                    </ MuiPickersUtilsProvider>
-                                </FormControl>
+                                            </ MuiPickersUtilsProvider>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={3}>
+                                        <Button variant="outlined" size="large" onClick={handleNow}>Now</Button>
+                                    </Grid>
+                                </Grid>
                             </Grid>
                             <Grid item md={6} xs={12}>
                                 <FormControl
