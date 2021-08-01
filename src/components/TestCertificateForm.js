@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import Paper from '@material-ui/core/Paper';
@@ -27,6 +27,8 @@ import { useSnackbar } from '../context/snackbar';
 import { useEmail } from '../context/email';
 import { useConfig } from '../context/config';
 import CertificateDialog from './CertificateDialog';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 const dateFns = new DateFnsUtils();
 
@@ -101,25 +103,43 @@ export default function TestCertificateForm() {
         unique_certificate_identifier: null,
         report_html: null
     });
-    const [showCertificate, setShowCertificate] = useState(null);
+    const [showCertificate, setShowCertificate] = useState(false);
 
     const { request, response } = useFetch('/covid-test-certificate/');
 
+    let validationSchema = yup.object().shape({
+        forename: yup.string().required(),
+        surname: yup.string().required(),
+        email: yup.string().email().required(),
+        date_of_birth: yup.date().required(),
+        sample_collection_time: yup.date().required(),
+        sample_id: yup.string().required(),
+        test_centre: yup.string().required(),
+        test_manufacturer: yup.string().required(),
+        test_type: yup.string().required(),
+        test_result: yup.string().required(),
+        naa_test_name: yup.string().required(),
+    });
+
     // Material-ui pickers need a null if you want to start them off as blank.
     const defaultValues = {
-        forename: null,
-        surname: null,
+        forename: '',
+        surname: '',
         date_of_birth: null,
         sample_collection_time: new Date(),
-        sample_id: null,
+        sample_id: '',
         test_centre: 'Precision Health',
         test_manufacturer: '1604',
-        test_type: 'SARS-CoV-2 Antigen',
+        test_type: 'LP217198-3',
         test_result: 'negative',
         naa_test_name: ' ' // Required blank entry to get around API validation limitation
     };
 
-    const { register, reset, control, setValue, handleSubmit, formState: { errors } } = useForm({ defaultValues });
+    const { register, reset, control, setValue, handleSubmit, formState: { errors, isDirty, isValid } } = useForm({
+        mode: 'onChange',
+        defaultValues,
+        resolver: yupResolver(validationSchema)
+    });
 
     const clearForm = () => {
 
@@ -137,19 +157,17 @@ export default function TestCertificateForm() {
 
         if (response.ok) {
             console.log('Response OK', certificate);
+            setCertificate(certificateRequest);
 
             const msg = {
                 to: data.email, // Change to your recipient
-                subject: config.get('emailSubject'),
+                subject: `${config.get('emailSubject')} [${certificateRequest.unique_certificate_identifier}]`,
                 text: config.get('emailText'),
-                html: certificate.report_html,
+                html: certificateRequest.report_html,
             };
 
-            setCertificate(certificateRequest);
             setShowCertificate(true);
             await email.send(msg);
-            clearForm();
-
             snackbar.success('Certificate sent');
         } else {
             console.log('Response ERR', response);
@@ -158,6 +176,7 @@ export default function TestCertificateForm() {
     };
 
     const onCloseCertificate = () => {
+        clearForm();
         setShowCertificate(false);
     };
 
@@ -195,7 +214,7 @@ export default function TestCertificateForm() {
                                         fullWidth
                                         required
                                     >
-                                        {config.get('testCentres').map(tc => (<MenuItem value={tc.value}>{tc.key}</MenuItem>))}
+                                        {config.get('testCentres').map(tc => (<MenuItem key={tc.key} value={tc.value}>{tc.key}</MenuItem>))}
                                     </Select>
                                 )}
                             />
@@ -334,7 +353,7 @@ export default function TestCertificateForm() {
                             </Grid>
                             <Grid item md={6} xs={12}>
                                 <Grid container direction="row"
-                                    justify="center"
+                                    justifyContent="center"
                                     alignItems="center"
                                 >
                                     <Grid item xs={9}>
@@ -393,9 +412,7 @@ export default function TestCertificateForm() {
                                                 required
                                                 error={!!errors && errors.test_type}
                                             >
-                                                {config.get('testTypes').map(tc => (<MenuItem value={tc.value}>{tc.key}</MenuItem>))}
-                                                {/* <MenuItem value="SARS-CoV-2 Antigen">SARS-CoV-2 Antigen</MenuItem>
-                                                <MenuItem value="LP217198-3">SARS-CoV-2 Antigen (LP217198-3)</MenuItem> */}
+                                                {config.get('testTypes').map(tc => (<MenuItem key={tc.key} value={tc.value}>{tc.key}</MenuItem>))}
                                             </Select>
                                         )}
                                     />
@@ -422,9 +439,7 @@ export default function TestCertificateForm() {
                                                 required
                                                 error={!!errors && errors.test_manufacturer}
                                             >
-                                                {config.get('testManufacturers').map(tc => (<MenuItem value={tc.value}>{tc.key}</MenuItem>))}
-                                                {/* <MenuItem value="1604">Roche SD Biosensor Test Kit (1604)</MenuItem>
-                                                <MenuItem value="1833">Test Manufacturer (1833)</MenuItem> */}
+                                                {config.get('testManufacturers').map(tc => (<MenuItem key={tc.key} value={tc.value}>{tc.key}</MenuItem>))}
                                             </Select>
                                         )}
                                     />
@@ -447,7 +462,7 @@ export default function TestCertificateForm() {
                         <div className={classes.submit}>
                             <div className={classes.spacer}></div>
                             <Button variant="contained" color="secondary" onClick={clearForm}>Clear</Button>
-                            <Button variant="contained" color="primary" onClick={handleSubmit(onSubmit)}>Create Test Certificate</Button>
+                            <Button variant="contained" color="primary" disabled={!isDirty || !isValid} onClick={handleSubmit(onSubmit)}>Create Test Certificate</Button>
                         </div>
                     </Paper>
                 </form>

@@ -4,7 +4,6 @@ export const ConfigContext = createContext();
 
 export function ConfigContextProvider({ children }) {
 
-
     const savedConfig = JSON.parse(window.localStorage.getItem('config')) || {
         refreshInterval: 3600000,
         emailApiKey: null,
@@ -18,6 +17,7 @@ export function ConfigContextProvider({ children }) {
         testCentres: [],
         testTypes: []
     };
+    
     const storedConfig = window.localStorage.getItem('config');
     console.log('Stored config', storedConfig, JSON.parse(storedConfig) || {}, savedConfig);
 

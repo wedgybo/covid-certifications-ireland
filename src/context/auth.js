@@ -6,41 +6,11 @@ import { useConfig } from './config';
 function useAuthApi() {
   const [endpoint, setEndpoint] = useState(null);
   const [token, setToken] = useState(null);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(true);
   const config = useConfig();
 
   const { request, response } = useFetch(config.get('endpoint'));
   const snackbar = useSnackbar();
-
-  const tokenEndpoint = useFetch(`${config.get('endpoint')}/token/`, {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'x-mock-response-code': '200'
-    }
-  });
-
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      await getToken();
-    }, parseInt(config.get('refreshInterval')) || 3600000);
-    return () => clearInterval(interval);
-  }, [getToken]);
-
-  async function getCurrentToken() {
-
-    let currentToken;
-
-    try {
-      currentToken = window.localStorage.getItem('token')
-
-      setToken(currentToken);
-    } catch (error) {
-      console.log('No current user');
-    }
-
-    console.log('Token', currentToken);
-    setReady(true);
-  }
 
   async function healthCheck() {
     const health = await request.get('/health-check/');
@@ -103,7 +73,6 @@ function useAuthApi() {
     }
 
     const body = formBody.join("&");
-    console.log('Body', body, formData);
 
     let token;
 
@@ -113,12 +82,13 @@ function useAuthApi() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
+          'x-mock-response-code': '200'
         },
         body,
       });
 
       token = await tokenResponse.json();
-
+      window.localStorage.setItem('token');
       setToken(token);
       snackbar.success('Token request accepted');
     } catch (error) {
@@ -129,33 +99,29 @@ function useAuthApi() {
     return token;
   }
 
-  async function getTokenJson() {
-
-    const credentials = {
-      client_id: config.get('clientId'),
-      client_secret: config.get('clientSecret'),
-    };
-
-    const token = await request.post('/token/', credentials);
-
-
-    if (response.ok) {
-      console.log('Token', token);
-      setToken(token);
-      snackbar.success('Token is healthy');
-    } else {
-      console.log('Error', token);
-      snackbar.error('Token request failed');
+  async function getCurrentToken() {
+    try {
+      const currentToken = window.localStorage.getItem('token');
+      console.log('Current token', currentToken);
+      if (currentToken) {
+        setToken(currentToken);
+      } else {
+        const newToken = await getToken();
+        setToken(newToken);
+      }
+    } catch (error) {
+      console.log('No current user');
     }
 
-    return token;
+    setReady(true);
   }
 
-  useEffect(() => {
+  // useEffect(() => {
 
+  //   await healthCheck();
 
-    getCurrentToken();
-  }, []);
+  //   getCurrentToken();
+  // }, []);
 
   return {
     token,
@@ -165,7 +131,6 @@ function useAuthApi() {
     healthCheck,
     authCheck,
     getToken,
-    getTokenJson,
     getAccessToken,
   };
 };
@@ -174,7 +139,7 @@ export const AuthContext = createContext();
 
 export function AuthContextProvider({ children }) {
   const auth = useAuthApi();
-  return (auth.ready && <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>);
+  return (<AuthContext.Provider value={auth}>{children}</AuthContext.Provider>);
 }
 
 export function useAuth() {

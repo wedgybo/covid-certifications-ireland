@@ -1,5 +1,4 @@
 import React from 'react';
-import clsx from 'clsx';
 import { Link as RouterLink, BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -52,14 +51,6 @@ const useStyles = makeStyles((theme) => ({
         transition: theme.transitions.create(['width', 'margin'], {
             easing: theme.transitions.easing.sharp,
             duration: theme.transitions.duration.leavingScreen,
-        }),
-    },
-    appBarShift: {
-        marginLeft: drawerWidth,
-        width: `calc(100% - ${drawerWidth}px)`,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
         }),
     },
     menuButton: {
@@ -117,24 +108,14 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export default function Dashboard() {
+export default function DashboardPage() {
     const classes = useStyles();
-    const [open, setOpen] = React.useState(false);
-    const [showSettings, setShowSettings] = React.useState(false);
-    const handleDrawerOpen = () => {
-        setOpen(true);
-    };
-    const handleDrawerClose = () => {
-        setOpen(false);
-    };
-
-    const fixedHeightPaper = clsx(classes.paper, classes.fixedHeight);
 
     return (
         <div className={classes.root}>
             <Router>
                 <CssBaseline />
-                <AppBar position="absolute" className={clsx(classes.appBar, open && classes.appBarShift)}>
+                <AppBar position="absolute" className={classes.appBar}>
                     <Toolbar className={classes.toolbar}>
                         <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
                             COVID Certifications

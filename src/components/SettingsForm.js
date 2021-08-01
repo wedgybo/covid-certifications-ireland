@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 
-import { makeStyles, withStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
 import KeyValueList from './KeyValueList';
 import { useForm, Controller } from 'react-hook-form';
 import { useSnackbar } from '../context/snackbar';
@@ -36,13 +35,13 @@ export default function SettingsForm({ onSubmit }) {
     const [open, setOpen] = useState(false);
 
     const defaultValues = {
-        emailApiKey: config.get('emailApiKey') || null,
-        emailFrom: config.get('emailFrom') || null,
-        emailSubject: config.get('emailSubject') || null,
-        emailText: config.get('emailText') || null,
-        endpoint: config.get('endpoint') || null,
-        clientId: config.get('clientId') || null,
-        clientSecret: config.get('clientSecret') || null,
+        emailApiKey: config.get('emailApiKey') || '',
+        emailFrom: config.get('emailFrom') || '',
+        emailSubject: config.get('emailSubject') || '',
+        emailText: config.get('emailText') || '',
+        endpoint: config.get('endpoint') || '',
+        clientId: config.get('clientId') || '',
+        clientSecret: config.get('clientSecret') || '',
         testCentres: config.get('testCentres') || [],
         testManufacturers: config.get('testManufacturers') || [],
         testTypes: config.get('testTypes') || [],
@@ -109,7 +108,7 @@ export default function SettingsForm({ onSubmit }) {
 
     return (
         <Container component="main" maxWidth="md">
-            <CertificateDialog open={open} onClose={onClose} certificate={({unique_certificate_identifier: 'URN:UVCI:01:IE:1006868#6', report_html: '<h1>Report HTML test</h1>'})} />
+            <CertificateDialog open={open} onClose={onClose} certificate={({ unique_certificate_identifier: 'URN:UVCI:01:IE:1006868#6', report_html: '<h1>Report HTML test</h1>' })} />
             <div>
                 <form id="settings">
                     <Paper align="center" className={classes.paper}>
@@ -172,7 +171,7 @@ export default function SettingsForm({ onSubmit }) {
                     </Paper>
 
                     <Paper align="center" className={classes.paper}>
-                    <Typography variant="h6" component="h2">SendGrid Settings</Typography>
+                        <Typography variant="h6" component="h2">SendGrid Settings</Typography>
 
                         <Controller
                             name="emailApiKey"
@@ -244,7 +243,7 @@ export default function SettingsForm({ onSubmit }) {
                         />
                     </Paper>
                     <Paper align="center" className={classes.paper}>
-                    <Typography variant="h6" component="h2">Test Centres</Typography>
+                        <Typography variant="h6" component="h2">Test Centres</Typography>
                         <FormControl
                             fullWidth
                             margin="normal">
@@ -253,18 +252,18 @@ export default function SettingsForm({ onSubmit }) {
                                 control={control}
                                 render={({ field }) => (
                                     <KeyValueList
-                                        {...field}
+                                        value={field.value}
+                                        onChange={field.onChange}
                                         id="testCentres"
                                         name="testCentres"
                                         label="Test Centres"
-                                        dense={true}
                                     />
                                 )}
                             />
                         </FormControl>
                     </Paper>
                     <Paper align="center" className={classes.paper}>
-                    <Typography variant="h6" component="h2">Test Types</Typography>
+                        <Typography variant="h6" component="h2">Test Types</Typography>
 
                         <FormControl
                             fullWidth
@@ -274,18 +273,18 @@ export default function SettingsForm({ onSubmit }) {
                                 control={control}
                                 render={({ field }) => (
                                     <KeyValueList
-                                        {...field}
+                                        value={field.value}
+                                        onChange={field.onChange}
                                         id="testTypes"
                                         name="testTypes"
                                         label="Test Types"
-                                        dense={true}
                                     />
                                 )}
                             />
                         </FormControl>
                     </Paper>
                     <Paper align="center" className={classes.paper}>
-                    <Typography variant="h6" component="h2">Test Manufacturers</Typography>
+                        <Typography variant="h6" component="h2">Test Manufacturers</Typography>
 
                         <FormControl
                             fullWidth
@@ -295,11 +294,11 @@ export default function SettingsForm({ onSubmit }) {
                                 control={control}
                                 render={({ field }) => (
                                     <KeyValueList
-                                        {...field}
+                                        value={field.value}
+                                        onChange={field.onChange}
                                         id="testManufacturers"
                                         name="testManufacturers"
                                         label="Test Manufacturers"
-                                        dense={true}
                                     />
                                 )}
                             />
@@ -308,7 +307,7 @@ export default function SettingsForm({ onSubmit }) {
 
                     <Paper align="center" className={classes.paper}>
 
-                        <Button onClick={handleSubmit(handleOnSubmit)} color="primary">
+                        <Button onClick={handleSubmit(handleOnSubmit)} disabled={!isDirty || !isValid} color="primary">
                             Save
                         </Button>
                     </Paper>

@@ -9,8 +9,8 @@ import AddIcon from '@material-ui/icons/Add';
 export default function KeyValueList(props) {
 
     const [keyValues, setKeyValues] = useState(props.value || []);
-    const [key, setKey] = useState(null);
-    const [value, setValue] = useState(null);
+    const [key, setKey] = useState('');
+    const [value, setValue] = useState('');
 
 
     const handleOnKeyChange = (event) => {
@@ -22,7 +22,7 @@ export default function KeyValueList(props) {
     };
 
     const handleAdd = (data) => {
-        if (key !== null && value !== null) {
+        if (key !== '' && value !== '') {
 
             const newKeyValues = [...keyValues, { key, value }];
             setKeyValues(newKeyValues);
@@ -35,7 +35,11 @@ export default function KeyValueList(props) {
 
     const handleDelete = (index) => {
         return () => {
-            keyValues.splice(index, 1);
+            console.log('Deleting item at index', index);
+            const newKeyValues = [...keyValues];
+            newKeyValues.splice(index, 1);
+            setKeyValues(newKeyValues);
+            props.onChange(newKeyValues);
         }
     };
 
